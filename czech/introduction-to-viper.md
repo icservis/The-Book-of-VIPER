@@ -1,37 +1,37 @@
-**VIPER** - это подход к архитектуре мобильных приложений (в частности - iOS), основанный на идеях [Роберта Мартина](http://blog.cleancoder.com/), изложенных им в статье [The Clean Architecture](https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html).
+**VIPER** - to je návrhový vzor mobilních aplikací (zejména iOS), založený na myšlenkách [Roberta Martina](http://blog.cleancoder.com/), představených v článku [The Clean Architecture](https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html).
 
 ![Clean Architecture](../Resources/clean-architecture.png)
 
-#### Основные задачи, которые помогает решить VIPER
+#### Hlavní úkoly, které pomáhá řešit VIPER
 
-- Обеспечение более полного покрытия тестами слоя Presentation, обычно включающего в себя *Massive View Controllers*.
-- Разбитие самых крупных классов наших приложений на набор элементов с более-менее четко определенными границами ответственности.
+- Kompletní pokrytí testy  vrstvy Presentation, které zpravidla zajišťují *Massive View Controllers*.
+- Rozdělení velkých tříd aplikace na menší sady s jasně rozdělenenými kompetencemi.
 
-Важно сразу же отметить, что VIPER - это ни в коем случае не набор строгих шаблонов и правил. Скорее это перечень рекомендаций, следуя которым можно построить гибкую и переиспользуемую архитектуру мобильного приложения. Мы, iOS команда Rambler&Co, адаптировали некоторые из каноничных принципов и сформировали определенный набор Best Practices для разработки тех или иных юзкейсов.
+Je důležité si uvědomit, že VIPER není v žádném případě soubor přísných pravidel a šablon. Spíše se jedná o seznam doporučení, který nám pomáhají vybudovat flexibilní architekturu mobilní aplikace. My, iOS tým Rambler&Co, jsme přizpůsobili některé z principů kanonizace a na jejich základě jsme vytvořili soubor osvědčených postupů při implementaci zadání aplikace.
 
-Первоначально VIPER может ломать сознание, особенно разработчикам без опыта командной работы над крупными проектами - отсутствует понимание необходимости независимости модулей приложения друг от друга и максимально возможного покрытия их тестами. Тем не менее, весь набор решений оправдывает себя даже для небольших приложений.
+Zpočátku může architektura VIPERu připadat těžkopádná a nepochopitelná a to zejména tehdy, pokud není vývojář zvyklý pracovat v týmu na velkých projektech a to zejména kvůli nepochopení potřeby nezávislosti aplikačních modulů na sobě a nutnosti maximálního pokrytí kódu jednotkovými testy. Nicméně celá sada přístupů má své přednosti i pro menší aplikace.
 
-#### Основные достоинства и недостатки VIPER
+#### Hlavní výhody a nevýhody návrhového vzoru VIPER
 
-Плюсы:
+Klady:
 
-- Повышение тестируемости Presentation-слоя приложений.
-- Полная независимость модулей друг от друга - это позволяет независимо их разрабатывать и переиспользовать как в одном приложении, так и в нескольких.
-- Передача проекта другим разработчикам, либо внедрение нового, дается намного проще, так как общие подходы к архитектуре заренее определены.
+- Zkvalitnění vrstvy Presentation pomocí jednotkový testů.
+- Naprostá nezávislost modulů na sobě - to umožňuje nezávislý rozvoj a opětovné využití ať ve vlastní aplikaci nebo i v jiných aplikacích.
+- Výrazně vyšší zaměnitelnost vývojářů vzhledem k mnohem jednodušší implementaci a údržbě díky univerzálním postupům platným pro všechny moduly.
 
-Минусы:
+Zápory:
 
-- Резкое увеличение количества классов в проекте, сложности при создании нового модуля.
-- Некоторые из принципов не ложатся напрямую на UIKit и подходы Apple.
-- Отсутствие в открытом доступе набора конкретных рекомендаций, best practices и примеров сложных приложений.
+- Prudký nárůst počtu tříd v projektu, vysoká složitost vytvoření nového modulu.
+- Některé zásady neodpovídají úplně doporučeným postupům při implementaci UIKitu od Apple.
+- Nedostatek veřejně dostupných ukázek implementace, best practices nebo příkladů použití v kompletních aplikacích.
 
-Остальные части нашего руководства в подробностях раскроют каждый из этих пунктов, в том числе расскажут о том, как избавиться от перечисленных недостатков.
+V další části podrobně rozebereme každý bod z tohoto seznamu, včetně diskuse o tom, jak tyto problémy eliminovat.
 
-#### Небольшой ликбез по истории вопроса
+#### Historie VIPERu v kostce
 
-- **08.2012** - Статья [The Clean Architecture](https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html) от Роберта Мартина.
-- **12.2013** - Статья [Introduction to VIPER](http://mutualmobile.github.io/blog/2013/12/04/viper-introduction/) от компании [MutualMobile](http://mutualmobile.github.io/).
-- **06.2014** - Выпуск objc.io #13 со статьей [Architecting iOS Apps with VIPER](https://www.objc.io/issues/13-architecture/viper/) от тех же MutualMobile.
-- **07.2014** - [Выпуск подкаста iPhreaks Show](https://itunes.apple.com/ru/podcast/the-iphreaks-show/id634022060?mt=2&i=316803444), в котором MutualMobile рассказывают о том, как появился VIPER, какие вопросы он решает, и как используется в их приложениях.
-- **04.2015** - В рамках локального хакатона в Rambler&Co пишется первое приложение с использованием подходов VIPER.
-- **12.2015** - У Rambler&Co больше десяти приложений на VIPER, как разрабатываемых в данный момент, так и [выпущенных в AppStore](https://itunes.apple.com/ru/developer/rambler-internet-holdings/id395455934).
+- **08.2012** - článek [The Clean Architecture](https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html) od Rоberta Martina.
+- **12.2013** - článek [Introduction to VIPER](http://mutualmobile.github.io/blog/2013/12/04/viper-introduction/) od společnosti [MutualMobile](http://mutualmobile.github.io/).
+- **06.2014** - vydání objc.io #13 s článkem [Architecting iOS Apps with VIPER](https://www.objc.io/issues/13-architecture/viper/) také od MutualMobile.
+- **07.2014** - [vydání podcast iPhreaks Show] (https://itunes.apple.com/ru/podcast/the-iphreaks-show/id634022060?mt=2&i=316803444), kde MutualMobile mluví o tom, jak se VIPER objevil, které otázky byly rozhodující a jak jej využívat v aplikacích.
+- **04.2015** - V rámci místního Hackatonu v Rambler&Co byla napsána první aplikace pomocí návrhového vzoru VIPER.
+- **12.2015** - v Rambler&Co obdželi více jak 10 objednávek na použití VIPERu, a to jak v současné době rozpracovaných tak již  [publikovaných aplikací na AppStore](https://itunes.apple.com/ru/developer/rambler-internet-holdings/id395455934).

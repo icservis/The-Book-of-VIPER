@@ -3,7 +3,7 @@
 ### Obsah
 
 #### Úvod
-- [Úvod do VIPER](introduction-to-viper.md)
+- [Úvod do návrhového vzoru VIPER](introduction-to-viper.md)
 - [Struktura modulů VIPERu](module-structure.md)
 - [Automatické generování kódu při vytváření modulů](code-generation.md)
 
