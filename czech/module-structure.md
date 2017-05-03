@@ -1,40 +1,40 @@
-## Разбиение приложения на модули
+## Rozdělení aplikace na moduly
 
-Любой проект можно разбить на несколько логических частей с четко определенной функциональностью. Возьмем, к примеру, Instagram. Основная часть приложения - лента новостей, в которой мы можем просматривать фотографии, ставить лайки, переходить к экрану создания комментария или к отправке сообщений. На другой вкладке находится список лайков, из которого мы можем переходить к конкретной фотографии. Каждый из этих экранов является самодостаточным элементом приложения, выполняющим четко поставленную задачу, и умеющим при необходимости инициировать переход на другие экраны. Такие элементы приложения мы называем модулями.
+Každý projekt lze rozdělit do několika logických částí s jasně definovanou funkcí. Vezměme si například Instagram. Hlavní část aplikace je feed zpráv, kde můžeme prohlížet fotografie, dávat lajky, přejít na obrazovku pro vložení komentářě nebo odeslat zprávu. Další záložka je seznam lajků, odkud můžeme přejít na konkrétní fotografii. Každá z těchto obrazovek je samostatný prvek, sloužící k plnění jasného úkolu, a z které můžeme iniciovat přechod na jiné obrazovky, pokud je to požadováno. Tyto prvky nazýváme aplikační moduly.
+V jednoduchých případech jedna obrazovka odpovídá jednomu modulu, ale pokud jsou obrazovky složité, měli bychom je rozdělit na více modulů. Pro příklad opět z aplikace Instagram - obrazovka profilu. Obrazovku je možné rozdělit modul fotky (1), informace o uživatelském profilu (2), lišta pro přepnutí seznamu fotografií na jiná zobrazení (3).
 
-В простых случаях один экран соответствует одному модулю, но могут быть и сложные экраны, на которых одновременно находятся несколько модулей. Пример из того же Instagram - экран профиля. На нем можно выделить модуль фотографий (1), модуль информации о пользователе (2), вкладки для переключения списка фотографий на другие модули (3).
+![Profil Instagram](../Resources/instagram_example_serkrapiv.png)
 
-![Профиль Instagram](../Resources/instagram_example_serkrapiv.png)
+## Struktura modulu VIPER
 
-## Структура VIPER-модуля
+Pokud má modul plnit svůj účel, je nutné vyřešit několik úkolů. Je vyžadována nějaká aplikační logika, propojení se sítí nebo databází, vykreslování uživatelského rozhranní. Tyto všechny úkoly jsou rozděleny do jednolivých prvků Viperu a my si popíšeme úlohu každého z nich a také způsob, jak spolu vzájemně komunikují. 
+Takže prvky VIPER jsou následující:
 
-Для того, чтобы модуль выполнял свое предназначение, нужно решить ряд задач. Требуется реализовать бизнес-логику модуля, работу с сетью, базой данных, отрисовать пользовательский интерфейс. За все это должны отвечать отдельные компоненты, и VIPER описывает роль каждого и способы их взаимодействия между собой. Итак, VIPER-модуль состоит из следующих частей:
+**View:** je zodpovědný za zobrazování dat na obrazovce - vykreslování UI a také za přenos uživatelkých interakcí do Presenteru. Je to pasivní prvek, nikdy sám nežádá o data, vždy je dostává přes Presenter.
 
-**View:** отвечает за отображение данных на экране и оповещает Presenter о действиях пользователя. Пассивен, сам никогда не запрашивает данные, только получает их от презентера.
+**Interactor:** pokrývá veškerou aplikační logiku potřebnou pro chod aplikace
 
-**Interactor:** содержит всю бизнес-логику, необходимую для работы текущего модуля.
+**Presenter:** přijímá od **View** informace o interakcích uživatele a přeposílá je jako požadavky na  **Router**, **Interactor**, a také přijímá data od **Interactor**, které napopak vrací do **View** pro zobrazení uživateli.
 
-**Presenter:** получает от **View** информацию о действиях пользователя и преображает ее в запросы к **Router’у**, **Interactor’у**, а также получает данные от **Interactor’a**, подготавливает их и отправляет **View** для отображения.
+**Entity**: datové objekty bez jakékoliv aplikační logiky.
 
-**Entity**: объекты модели, не содержащие никакой бизнес-логики.
+**Router**: je zodpovědný za navigaci mezi jednotlivými moduly v aplikaci.
 
-**Router**: отвечает за навигацию между модулями.
+## Co jsme změnili
 
-## Что мы изменили
+Takže VIPER původně představila společnost [Mutual Mobile](https://www.objc.io/issues/13-architecture/viper/). my jsme začali tento postup aktivně používat a záhy jsme si uvědomili, že má několik problematických míst:
 
-Так VIPER выглядит в своем первозданном виде [от Mutual Mobile](https://www.objc.io/issues/13-architecture/viper/). Мы поработали с этим подходом и вскоре поняли, что в нем есть несколько не слишком удобных моментов:
+1) V původní verzi VIPERu byl za routování mezi moduly zodpovědný prvek zvaný Wireframe. Zároveň byl ale zodpovědný za komunikaci mezi jednotlivými prvky v modulu. To je ale špatně, protože to porušuje zásadu [Single Responsibility](https://en.wikipedia.org/wiki/Single_responsibility_principle). 
 
-1) В первоначальной версии VIPER за роутинг отвечает компонент под названием Wireframe. Но при этом он же отвечает за сборку модуля, переход к которому он осуществляет, и проставление всех зависимостей у этого модуля. Это плохо, поскольку нарушает принцип [Single Responsibility](https://en.wikipedia.org/wiki/Single_responsibility_principle). 
+Rozhodli jsem se rozdělit prvek Wireframe na dva. První část, Router, je zodpovědný pouze za komunikaci mezi jednotlivými moduly v aplikace. Druhý část, Assembly, je zodpovědná za sestavení modulu z jednotlivých prvků a udržování vztahů mezi jednotlivými prvky v modulu. V našich aplikacích se pro tento účel používá [Typhoon](https://github.com/appsquickly/Typhoon), bezvadná knihovna pro Dependency Injection, která nám dovoluje se zbavit závislostí jednotlivých prvků v modulu na sobě.
 
-Мы решили разделить Wireframe на две части. Первая, Router, отвечает только за переходы между модулями. Вторая, Assembly, отвечает за сборку модуля и проставление зависимостей между всеми его компонентами. В наших проектах для этого используется [Typhoon](https://github.com/appsquickly/Typhoon), замечательная библиотека для Dependency Injection, благодаря использованию которой вручную Assembly из кода не вызывается.
+2) Interaktor implementuje veškerou aplikační logiku. Vypadá to sice docela komplikovaně, protože to může představovat hodně úkolů, ale ty by měli být rozděleny mezi různé třídy. Krom toho se takový úkol může opakovat i v Interaktoru jiných modulů. Potřebovali jsme tohle dobře promyslet, abychom kód nemuseli znovu psát pro každý modul.
 
-2) Интеракторы скрывают в себе бизнес-логику. Звучит довольно страшно, ведь за этим кроется много работы, которую стоит разделять между специализированными классами. К тому же часто один и тот же код нужно переиспользовать в нескольких интеракторах. Нам было нужно общее понимание того, как это делать, чтобы не изобретать свои велосипеды в каждом проекте.
+Rozhodli jsme se přidat další vrstvu služeb. Service - objekt zodpovědný za práci se svým specifickým typem datového modelu. Například služba News je zodpovědná za získání seznamu novinek pro určitou kategorii, stejně tak i detail jednotlivých zpráv. Autorizační služba je zodpovědná za autentofikaci uživatele, změnu hesla a tak dále. Čili služby mají závislosti na nižších objektech, která odpovídají za obsluhu sítě nebo datového úložiště.
 
-Мы решили ввести дополнительный слой сервисов. Сервис - объект, отвечающий за работу со своим определенным типом модельных объектов. Например, сервис новостей отвечает за получение списка новостей в определенной категории, а так же подробной информации о каждой новости. Сервис авторизации отвечает за, собственно, авторизацию, восстановление пароля, обновление сессии и так далее. У сервисов, в свою очередь, есть зависимости на объекты нижнего уровня, отвечающие за работу с сетью или базой данных.
+Služby se injektují do interaktoru. Data jsou zde zpracována, je aplikována veškerá logika a dále jsou přenášeny do Presenteru. My jsme se v týmu dohodli, že v případě použití Core Data se NSManagedObject nezpracováná mimo Interaktor. Proto také v Interaktoru dochází k přeměně `NSManagedObject` na obyčejný `NSObject`.
 
-Сервисы инжектируются в интерактор. В итоге интерактор в основном служит фасадом, взаимодействующим с сервисами и передающим полученные от них данные презентеру. Мы в команде договорились о том, что при работе с Core Data NSManagedObject’ы не выходят на уровни выше интерактора. Поэтому в интеракторах также происходит преобразование `NSManagedObject` в Plain Old NSObject, то есть простой наследник `NSObject`.
-
-3) В модуле VIPER в качестве View чаще всего выступает `UIViewController`. А в контроллере иногда содержится код, не относящийся напрямую к задачам View. Пример: работа с таблицами и коллекциями. Не зря ведь для работы с этими объектами созданы протоколы, подразумевается, что их реализация должна быть вынесена в отдельный объект. Но в примере от Mutual Mobile код по работе с таблицами содержится прямо в `UIViewController`.
+3) Ve VIPERu se často jako View používá `UIViewController`. Ale někdy se v kontroléru vystytuje kód, který přímo nesouvisí s View. Například práce s kolekcemi zobrazované tabulkami. Né nadarmo jsou pro páci s těmito objekty vytvořeny protokoly. Předpokládá se, že operace s těmito objekty by mělo být realizováno v samosttaných objektech. Ale v příkladě od Mutual Mobile pro práci s tabulkami přímo včleněn do `UIViewController`.
 
 Нам это не понравилось, и мы решили, что View в общем случае является не одним объектом, а слоем. Помимо контроллера этот слой может содержать дополнительные объекты, которые инжектируются в контроллер и берут на себя часть его работы. Примером такого объекта в наших проектах является DataDisplayManager, реализующий методы `UITableViewDataSource` и `UITableViewDelegate`, или их аналоги для коллекций.
 
